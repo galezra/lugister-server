@@ -7,10 +7,11 @@
 		"dev": "nodemon server.js"
 	},
 	"dependencies": {
+		"cors": "^2.8.5",
 		"express": "^4.12.4",
 		"socket.io": "*"
 	},
-  "devDependencies": {
+	"devDependencies": {
 		"nodemon": "^3.0.2"
 	},
 	"keywords": [

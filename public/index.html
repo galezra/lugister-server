@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket.IO Emoji Share</title>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .connected {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .emoji-container {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .emoji {
+            font-size: 24px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        #emojiFeed {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f0f2f5;
+            border-radius: 5px;
+            min-height: 200px;
+        }
+        .emoji-message {
+            margin: 5px 0;
+            padding: 5px;
+            background-color: white;
+            border-radius: 5px;
+        }
+        #targetEmails {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        #userList {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .user-item {
+            padding: 4px 8px;
+            margin: 2px 0;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Emoji Share</h1>
+        <div id="status" class="status disconnected">Disconnected</div>
+        
+        <div id="userList">
+            <h3>Connected Users</h3>
+            <!-- Users will be displayed here -->
+        </div>
+
+        <div class="emoji-container">
+            <input type="text" id="targetEmails" placeholder="Enter target emails (comma-separated)">
+            <div class="help-text">Leave empty to send to everyone</div>
+            <div>
+                <span class="emoji" onclick="sendEmoji('😊')">😊</span>
+                <span class="emoji" onclick="sendEmoji('👍')">👍</span>
+                <span class="emoji" onclick="sendEmoji('❤️')">❤️</span>
+                <span class="emoji" onclick="sendEmoji('🎉')">🎉</span>
+                <span class="emoji" onclick="sendEmoji('😂')">😂</span>
+                <span class="emoji" onclick="sendEmoji('🙌')">🙌</span>
+            </div>
+        </div>
+
+        <div id="emojiFeed"></div>
+    </div>
+
+    <script>
+        const email = 'test@example.com';  // Default email for testing
+        const socket = io('http://localhost:3000',{
+            query: {
+                email: email
+            }
+        });
+
+        const statusElement = document.getElementById('status');
+        const emojiFeed = document.getElementById('emojiFeed');
+        const userList = document.getElementById('userList');
+
+        // Function to fetch and display users
+        function updateUserList() {
+            fetch('http://localhost:3000/users')
+                .then(response => response.json())
+                .then(users => {
+                    const userListHTML = users.map(user => 
+                        `<div class="user-item">${user.email} (${user.suffix})</div>`
+                    ).join('');
+                    userList.innerHTML = `<h3>Connected Users</h3>${userListHTML}`;
+                })
+                .catch(error => console.error('Error fetching users:', error));
+        }
+
+        socket.on('connect', () => {
+            statusElement.textContent = 'Connected';
+            statusElement.className = 'status connected';
+            updateUserList(); // Update user list on connection
+        });
+
+        socket.on('disconnect', () => {
+            statusElement.textContent = 'Disconnected';
+            statusElement.className = 'status disconnected';
+        });
+
+        socket.on('newEmoji', (data) => {
+            const message = document.createElement('div');
+            message.className = 'emoji-message';
+            message.textContent = `${data.from.email} (${data.from.suffix}): ${data.emoji}`;
+            emojiFeed.insertBefore(message, emojiFeed.firstChild);
+            updateUserList(); // Update user list when receiving emoji
+        });
+
+        function sendEmoji(emoji) {
+            if (!emoji) return;
+            
+            const targetEmailsInput = document.getElementById('targetEmails').value.trim();
+            const targetEmails = targetEmailsInput ? 
+                targetEmailsInput.split(',').map(email => email.trim()) : 
+                [];
+
+            socket.emit('sendEmoji', { 
+                emoji: emoji, 
+                targetEmails: targetEmails
+            });
+        }
+
+        // Update user list periodically
+        setInterval(updateUserList, 5000);
+
+        // Initial user list update
+        updateUserList();
+    </script>
+</body>
+</html> 
