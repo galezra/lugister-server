@@ -110,8 +110,8 @@
     </div>
 
     <script>
-        const email = 'test@example.com';  // Default email for testing
-        const socket = io('http://localhost:3000',{
+        const email = 'gal@example.com';  // Default email for testing
+        const socket = io('https://troll.lugister.com/',{
             query: {
                 email: email
             }
@@ -123,7 +123,7 @@
 
         // Function to fetch and display users
         function updateUserList() {
-            fetch('http://localhost:3000/users')
+            fetch('https://troll.lugister.com/users')
                 .then(response => response.json())
                 .then(users => {
                     const userListHTML = users.map(user => 

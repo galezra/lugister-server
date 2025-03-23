@@ -34,7 +34,6 @@ app.use(cors({
 app.get('/users', (req, res) => {
   const userList = Array.from(users.values()).map(user => ({
     email: user.email,
-    suffix: user.suffix
   }));
   res.json(userList);
 });
@@ -48,14 +47,9 @@ io.on('connection', function (socket) {
     return;
   }
 
-  // Generate suffix on the server
-  const suffix = Math.random().toString(36).substring(2, 8);
-
-  // Store user information with server-generated suffix
   users.set(socket.id, {
     id: socket.id,
     email: email,
-    suffix: suffix,
     socket: socket
   });
 
@@ -74,7 +68,6 @@ io.on('connection', function (socket) {
           emoji,
           from: {
             email: sender.email,
-            suffix: sender.suffix
           }
         });
       });
