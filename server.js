@@ -28,9 +28,7 @@ io.on('connection', function (socket) {
   numUsers++;
 
   socket.on('sendEmojis', function () {
-    socket.emit('login', {
-      numUsers: numUsers
-    });
+
   });
 
   socket.on('disconnect', function () {
