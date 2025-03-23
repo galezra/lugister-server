@@ -33,7 +33,6 @@ io.on('connection', function (socket) {
     });
   });
 
-  // when the user disconnects.. perform this
   socket.on('disconnect', function () {
       --numUsers;
   });
