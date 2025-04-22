@@ -32,9 +32,20 @@ app.use(cors({
 
 // Add this endpoint after the static middleware
 app.get('/users', (req, res) => {
-  const userList = Array.from(users.values()).map(user => ({
+  // Filter unique users by email
+  const uniqueEmails = new Set();
+  const uniqueUsers = Array.from(users.values()).filter(user => {
+    if (!uniqueEmails.has(user.email)) {
+      uniqueEmails.add(user.email);
+      return true;
+    }
+    return false;
+  });
+  
+  const userList = uniqueUsers.map(user => ({
     email: user.email,
   }));
+  
   res.json(userList);
 });
 
